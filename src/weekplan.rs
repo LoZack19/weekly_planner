@@ -46,7 +46,12 @@ impl WeekPlan {
             && u8::try_from((slot - start) / u16::from(self.slot_duration)).unwrap() < self.slots
     }
 
-    pub fn insert(&mut self, weekday: Weekday, slot: Time, activity: Activity) -> Result<()> {
+    pub fn try_insert(
+        &mut self,
+        weekday: Weekday,
+        slot: Time,
+        activity: Activity,
+    ) -> Result<&mut Self> {
         if !self.is_valid_slot(slot) {
             return Err(Error::InvalidSlot);
         }
@@ -59,7 +64,7 @@ impl WeekPlan {
 
         self.plan.insert(key, activity);
 
-        Ok(())
+        Ok(self)
     }
 
     pub fn insert_range(
@@ -71,7 +76,7 @@ impl WeekPlan {
         let (start, len) = slots;
 
         for i in 0..len {
-            self.insert(
+            self.try_insert(
                 weekday,
                 start
                     .try_sum(u16::from(i) * self.slot_duration)
