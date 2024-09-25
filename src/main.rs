@@ -13,5 +13,5 @@ fn main() {
         )
         .unwrap();
 
-    println!("{weekplan:?}");
+    println!("{}", weekplan.to_html());
 }

@@ -33,6 +33,14 @@ impl Time {
 
         Time::new(hour, minute)
     }
+
+    pub fn hour(&self) -> u8 {
+        *self.hour
+    }
+
+    pub fn minute(&self) -> u8 {
+        *self.minute
+    }
 }
 
 impl PartialOrd for Time {

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::Write;
 
 pub use activity::Activity;
 pub use time::Time;
@@ -79,6 +80,78 @@ impl WeekPlan {
         }
 
         Ok(())
+    }
+
+    fn to_table(&self) -> (Vec<Weekday>, Vec<Time>, Vec<Activity>) {
+        let default_activity: Activity = "".into();
+
+        let weekdays = vec![
+            Weekday::Monday,
+            Weekday::Tuesday,
+            Weekday::Wednesday,
+            Weekday::Thursday,
+            Weekday::Friday,
+            Weekday::Saturday,
+            Weekday::Sunday,
+        ];
+
+        let times: Vec<Time> = (0..self.slots)
+            .map(|num| {
+                self.start
+                    .try_sum(u16::from(num) * self.slot_duration)
+                    .unwrap()
+            })
+            .collect();
+
+        let table: Vec<Activity> = weekdays
+            .iter()
+            .map(|&weekday| {
+                times
+                    .iter()
+                    .map(|&time| self.plan.get(&(weekday, time)).unwrap_or(&default_activity))
+                    .map(|s| s.to_owned())
+                    .collect::<Vec<Activity>>()
+            })
+            .reduce(|mut acc, v| {
+                v.into_iter().for_each(|value| acc.push(value));
+                acc
+            })
+            .unwrap();
+
+        (weekdays, times, table)
+    }
+
+    pub fn to_html(&self) -> String {
+        let mut html = String::new();
+        let (weekdays, times, table) = self.to_table();
+
+        writeln!(html, "<table border='1'>").unwrap();
+
+        // Write header row
+        writeln!(html, "  <tr>").unwrap();
+        writeln!(html, "    <th></th>").unwrap();
+        for day in &weekdays {
+            writeln!(html, "    <th>{:?}</th>", day).unwrap();
+        }
+        writeln!(html, "  </tr>").unwrap();
+
+        // Write table rows
+        for (i, time) in times.iter().enumerate() {
+            writeln!(html, "  <tr>").unwrap();
+            writeln!(html, "    <th>{:02}:{:02}</th>", time.hour(), time.minute()).unwrap();
+
+            for j in 0..weekdays.len() {
+                writeln!(html, "    <td>").unwrap();
+                writeln!(html, "      {}", table[i * times.len() + j]).unwrap();
+                writeln!(html, "    </td>").unwrap();
+            }
+
+            writeln!(html, "  </tr>").unwrap();
+        }
+
+        writeln!(html, "</table>").unwrap();
+
+        html
     }
 }
 
