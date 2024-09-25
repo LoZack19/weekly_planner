@@ -6,6 +6,7 @@ pub use time::Time;
 pub use weekday::Weekday;
 
 mod activity;
+mod serde;
 mod time;
 mod weekday;
 
