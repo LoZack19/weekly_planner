@@ -1,6 +1,8 @@
-use std::collections::HashMap;
+use core::fmt;
 use std::fmt::Write;
+use std::{collections::HashMap, str::FromStr};
 
+use ::serde::{de, Deserialize, Deserializer, Serialize};
 pub use activity::Activity;
 pub use time::Time;
 pub use weekday::Weekday;
@@ -10,9 +12,45 @@ mod serde;
 mod time;
 mod weekday;
 
-#[derive(Debug)]
+#[derive(Debug, Hash, PartialEq, Eq)]
+struct Slot(Weekday, Time);
+
+impl Serialize for Slot {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: ::serde::Serializer,
+    {
+        format!("{:?} {}", self.0, self.1).serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Slot {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        let mut parts = s.split_whitespace();
+
+        let weekday = parts
+            .next()
+            .ok_or_else(|| de::Error::custom("Missing weekday"))?;
+        let time = parts.next().ok_or_else(|| {
+            let custom = de::Error::custom("Missing time");
+            custom
+        })?;
+
+        let weekday =
+            Weekday::from_str(weekday).map_err(|_| de::Error::custom("Invalid weekday"))?;
+        let time = Time::from_str(time).map_err(|_| de::Error::custom("Invalid time"))?;
+
+        Ok(Slot(weekday, time))
+    }
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub struct WeekPlan {
-    plan: HashMap<(Weekday, Time), Activity>,
+    plan: HashMap<Slot, Activity>,
     start: Time,
     slot_duration: u16,
     slots: u8,
@@ -23,6 +61,19 @@ pub enum Error {
     InvalidSlot,
     AlreadyBooked,
 }
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let msg = match self {
+            Error::InvalidSlot => "Invalid slot",
+            Error::AlreadyBooked => "Already booked",
+        };
+
+        write!(f, "{msg}")
+    }
+}
+
+impl std::error::Error for Error {}
 
 type Result<T> = std::result::Result<T, Error>;
 
@@ -56,7 +107,7 @@ impl WeekPlan {
             return Err(Error::InvalidSlot);
         }
 
-        let key = (weekday, slot);
+        let key = Slot(weekday, slot);
 
         if self.plan.contains_key(&key) {
             return Err(Error::AlreadyBooked);
@@ -114,7 +165,11 @@ impl WeekPlan {
             .map(|&weekday| {
                 times
                     .iter()
-                    .map(|&time| self.plan.get(&(weekday, time)).unwrap_or(&default_activity))
+                    .map(|&time| {
+                        self.plan
+                            .get(&Slot(weekday, time))
+                            .unwrap_or(&default_activity)
+                    })
                     .map(|s| s.to_owned())
                     .collect::<Vec<Activity>>()
             })
