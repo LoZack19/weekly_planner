@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Styled Table</title>
+        <style>
+        
+            body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                margin: 0;
+                background-color: #f0f0f0;
+            }
+            .schedule-table {
+                border-collapse: collapse;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                background-color: white;
+            }
+            .schedule-table th,
+            .schedule-table td {
+                padding: 12px 15px;
+                text-align: center;
+            }
+            .schedule-table th {
+                background-color: #009879;
+                color: white;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
+            .schedule-table td {
+                border-bottom: 1px solid #dddddd;
+            }
+            .schedule-table tr:nth-child(even) {
+                background-color: #f3f3f3;
+            }
+            .schedule-table tr:last-of-type {
+                border-bottom: 2px solid #009879;
+            }
+            .schedule-table tr:hover {
+                background-color: #f5f5f5;
+                transition: background-color 0.3s ease;
+            }
+            .header-row th:first-child {
+                background-color: #007965;
+            }
+        
+        </style>
+    </head>
+    <body>
+        <table class="schedule-table">
+            <tr class="header-row">
+                <th></th>            <th>Monday</th>
+            <th>Tuesday</th>
+            <th>Wednesday</th>
+            <th>Thursday</th>
+            <th>Friday</th>
+            <th>Saturday</th>
+            <th>Sunday</th>
+        </tr>
+        <tr>
+            <th>08:30</th>
+            <td></td>
+            <td>Computer architectures</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <th>10:00</th>
+            <td>Computer architectures</td>
+            <td>Computer architectures</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <th>11:30</th>
+            <td>Computer architectures</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <th>13:00</th>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <th>14:30</th>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <th>16:00</th>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <th>17:30</th>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+    </body>
+    </html>

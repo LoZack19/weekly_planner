@@ -1,8 +1,7 @@
-mod weekplan;
-
 use std::fs::File;
-use std::io::{self, BufReader};
-use weekplan::WeekPlan;
+use std::io::{self, BufReader, Write};
+
+use weekly_planner::WeekPlan;
 
 fn main() -> Result<(), io::Error> {
     let week_plan: WeekPlan = {
@@ -11,6 +10,7 @@ fn main() -> Result<(), io::Error> {
         serde_json::from_reader(reader)?
     };
 
-    println!("{}", week_plan.to_html());
+    let mut outfile = File::create("output/week_plan.html")?;
+    write!(outfile, "{}", week_plan.to_html())?;
     Ok(())
 }

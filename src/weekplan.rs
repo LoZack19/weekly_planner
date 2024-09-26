@@ -1,6 +1,4 @@
 use core::fmt;
-use std::fmt::Write;
-use std::ops::SubAssign;
 use std::{collections::HashMap, str::FromStr};
 
 use ::serde::{de, Deserialize, Deserializer, Serialize};
@@ -196,35 +194,97 @@ impl WeekPlan {
     }
 
     pub fn to_html(&self) -> String {
-        let mut html = String::new();
         let (weekdays, times, table) = self.to_table();
 
-        writeln!(html, "<table border='1'>").unwrap();
+        let css = r#"
+            body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                margin: 0;
+                background-color: #f0f0f0;
+            }
+            .schedule-table {
+                border-collapse: collapse;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                background-color: white;
+            }
+            .schedule-table th,
+            .schedule-table td {
+                padding: 12px 15px;
+                text-align: center;
+            }
+            .schedule-table th {
+                background-color: #009879;
+                color: white;
+                text-transform: uppercase;
+                font-weight: bold;
+            }
+            .schedule-table td {
+                border-bottom: 1px solid #dddddd;
+            }
+            .schedule-table tr:nth-child(even) {
+                background-color: #f3f3f3;
+            }
+            .schedule-table tr:last-of-type {
+                border-bottom: 2px solid #009879;
+            }
+            .schedule-table tr:hover {
+                background-color: #f5f5f5;
+                transition: background-color 0.3s ease;
+            }
+            .header-row th:first-child {
+                background-color: #007965;
+            }
+        "#;
 
-        // Write header row
-        writeln!(html, "  <tr>").unwrap();
-        writeln!(html, "    <th></th>").unwrap();
+        let html_start = format!(
+            r#"<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Styled Table</title>
+        <style>
+        {}
+        </style>
+    </head>
+    <body>
+        <table class="schedule-table">
+            <tr class="header-row">
+                <th></th>"#,
+            css
+        );
+
+        let html_end = r#"    </table>
+    </body>
+    </html>"#;
+
+        let mut html = String::new();
+        html.push_str(&html_start);
+
+        // Add weekday headers
         for day in &weekdays {
-            writeln!(html, "    <th>{:?}</th>", day).unwrap();
+            html.push_str(&format!("            <th>{:?}</th>\n", day));
         }
-        writeln!(html, "  </tr>").unwrap();
+        html.push_str("        </tr>\n");
 
-        // Write table rows
+        // Add table rows
         for (i, time) in times.iter().enumerate() {
-            writeln!(html, "  <tr>").unwrap();
-            writeln!(html, "    <th>{:02}:{:02}</th>", time.hour(), time.minute()).unwrap();
+            html.push_str("        <tr>\n");
+            html.push_str(&format!("            <th>{}</th>\n", time.to_string(),));
 
             for j in 0..weekdays.len() {
-                writeln!(html, "    <td>").unwrap();
-                writeln!(html, "      {}", table[i * times.len() + j]).unwrap();
-                writeln!(html, "    </td>").unwrap();
+                let activity = &table[i + j * times.len()];
+                html.push_str(&format!("            <td>{}</td>\n", activity));
             }
 
-            writeln!(html, "  </tr>").unwrap();
+            html.push_str("        </tr>\n");
         }
 
-        writeln!(html, "</table>").unwrap();
-
+        html.push_str(html_end);
         html
     }
 }

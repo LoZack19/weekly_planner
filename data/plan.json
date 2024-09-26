@@ -1,9 +1,14 @@
 {
-    "plan":{
-        "Monday 08:30": "Computer architectures",
-        "Tuesday 10:00": "Computer architectures"
-    },
-    "start": {"hour": 8,"minute": 30},
-    "slot_duration": 90,
-    "slots": 7
+  "plan": {
+    "Monday 10:00": "Computer architectures",
+    "Tuesday 10:00": "Computer architectures",
+    "Tuesday 08:30": "Computer architectures",
+    "Monday 11:30": "Computer architectures"
+  },
+  "start": {
+    "hour": 8,
+    "minute": 30
+  },
+  "slot_duration": 90,
+  "slots": 7
 }
