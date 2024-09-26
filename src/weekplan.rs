@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, fmt::Display, str::FromStr};
 
 use ::serde::{de, Deserialize, Deserializer, Serialize};
 pub use activity::Activity;
@@ -12,7 +12,13 @@ mod time;
 mod weekday;
 
 #[derive(Debug, Hash, PartialEq, Eq)]
-struct Slot(Weekday, Time);
+pub struct Slot(Weekday, Time);
+
+impl Display for Slot {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?} {}", self.0, self.1.to_string())
+    }
+}
 
 impl Serialize for Slot {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -57,15 +63,17 @@ pub struct WeekPlan {
 
 #[derive(Debug)]
 pub enum Error {
-    InvalidSlot,
-    AlreadyBooked,
+    InvalidSlot(Time),
+    AlreadyBooked(Slot),
+    OutOfBounds,
 }
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let msg = match self {
-            Error::InvalidSlot => "Invalid slot",
-            Error::AlreadyBooked => "Already booked",
+            Error::InvalidSlot(time) => format!("Invalid slot {time}"),
+            Error::AlreadyBooked(slot) => format!("Slot {slot} already booked"),
+            Error::OutOfBounds => "Slot is outside of the last hour for the day".to_owned(),
         };
 
         write!(f, "{msg}")
@@ -115,13 +123,13 @@ impl WeekPlan {
         activity: Activity,
     ) -> Result<&mut Self> {
         if !self.is_valid_slot(slot) {
-            return Err(Error::InvalidSlot);
+            return Err(Error::InvalidSlot(slot));
         }
 
         let key = Slot(weekday, slot);
 
         if self.plan.contains_key(&key) {
-            return Err(Error::AlreadyBooked);
+            return Err(Error::AlreadyBooked(Slot(weekday, slot)));
         }
 
         self.plan.insert(key, activity);
@@ -142,7 +150,7 @@ impl WeekPlan {
                 weekday,
                 start
                     .try_sum(u16::from(i) * self.slot_duration)
-                    .ok_or(Error::InvalidSlot)?,
+                    .ok_or(Error::OutOfBounds)?,
                 activity.clone(),
             )?;
         }
@@ -287,6 +295,23 @@ impl WeekPlan {
         html.push_str(html_end);
         html
     }
+}
+
+#[macro_export]
+macro_rules! poli_plan {
+    ($start:expr, $duration:expr, $days:expr, $($day:expr => $time:expr , $length:expr , $name:expr),* $(,)?) => {{
+        let mut w = WeekPlan::new($start, $duration, $days).unwrap();
+        $(
+            let weekday = Weekday::from_str($day).unwrap();
+            let time = Time::from_str($time).unwrap();
+            w.try_insert_range(
+                weekday,
+                (time, $length),
+                $name.to_owned(),
+            ).unwrap();
+        )*
+        w
+    }};
 }
 
 #[cfg(test)]
