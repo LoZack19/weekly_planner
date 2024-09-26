@@ -1,9 +1,19 @@
 {
   "plan": {
+    "Monday 16:00": "Operating systems",
     "Monday 10:00": "Computer architectures",
-    "Tuesday 10:00": "Computer architectures",
+    "Friday 10:00": "Operating systems",
+    "Tuesday 11:30": "Electronics",
+    "Wednesday 10:00": "Electronics",
+    "Friday 08:30": "Operating systems",
     "Tuesday 08:30": "Computer architectures",
-    "Monday 11:30": "Computer architectures"
+    "Thursday 13:00": "Simulation",
+    "Friday 14:30": "Simulation",
+    "Thursday 11:30": "Electronics",
+    "Wednesday 08:30": "Electronics",
+    "Tuesday 10:00": "Computer architectures",
+    "Monday 11:30": "Computer architectures",
+    "Tuesday 13:00": "Electronics"
   },
   "start": {
     "hour": 8,
