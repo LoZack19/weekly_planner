@@ -1,17 +1,16 @@
 mod weekplan;
 
-use weekplan::{Time, WeekPlan, Weekday};
+use std::fs::File;
+use std::io::{self, BufReader};
+use weekplan::WeekPlan;
 
-fn main() {
-    let mut weekplan = WeekPlan::new(Time::new(8, 30).unwrap(), 90, 7).unwrap();
+fn main() -> Result<(), io::Error> {
+    let week_plan: WeekPlan = {
+        let infile = File::open("data/plan.json")?;
+        let reader = BufReader::new(infile);
+        serde_json::from_reader(reader)?
+    };
 
-    weekplan
-        .try_insert(
-            Weekday::Monday,
-            Time::new(8, 30).unwrap(),
-            "activity".into(),
-        )
-        .unwrap();
-
-    println!("{}", weekplan.to_html());
+    println!("{}", week_plan.to_html());
+    Ok(())
 }

@@ -1,0 +1,9 @@
+{
+    "plan":{
+        "Monday 08:30": "Computer architectures",
+        "Tuesday 10:00": "Computer architectures"
+    },
+    "start": {"hour": 8,"minute": 30},
+    "slot_duration": 90,
+    "slots": 7
+}
