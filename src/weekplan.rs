@@ -1,5 +1,6 @@
 use core::fmt;
 use std::fmt::Write;
+use std::ops::SubAssign;
 use std::{collections::HashMap, str::FromStr};
 
 use ::serde::{de, Deserialize, Deserializer, Serialize};
@@ -92,9 +93,21 @@ impl WeekPlan {
     pub fn is_valid_slot(&self, slot: Time) -> bool {
         let slot = slot.to_minutes();
         let start = self.start.to_minutes();
+        let distance = match slot.checked_sub(start) {
+            Some(val) => val,
+            None => {
+                return false;
+            }
+        };
 
-        (slot - start) % u16::from(self.slot_duration) == 0
-            && u8::try_from((slot - start) / u16::from(self.slot_duration)).unwrap() < self.slots
+        let slot_index = match u8::try_from(distance / u16::from(self.slot_duration)) {
+            Ok(val) => val,
+            Err(_) => {
+                return false;
+            }
+        };
+
+        distance % u16::from(self.slot_duration) == 0 && slot_index < self.slots
     }
 
     pub fn try_insert(
@@ -118,12 +131,12 @@ impl WeekPlan {
         Ok(self)
     }
 
-    pub fn insert_range(
+    pub fn try_insert_range(
         &mut self,
         weekday: Weekday,
         slots: (Time, u8),
         activity: Activity,
-    ) -> Result<()> {
+    ) -> Result<&mut Self> {
         let (start, len) = slots;
 
         for i in 0..len {
@@ -136,7 +149,7 @@ impl WeekPlan {
             )?;
         }
 
-        Ok(())
+        Ok(self)
     }
 
     fn to_table(&self) -> (Vec<Weekday>, Vec<Time>, Vec<Activity>) {
